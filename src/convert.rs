@@ -21,7 +21,10 @@ pub trait AsPtrMut<T>: AsPtr<T> {
     unsafe fn as_ptr_mut(&self) -> *mut T;
 }
 
-/// 用于帮助实现 AsRef<T> 契定的宏。
+/// 用于帮助实现 [AsRef] 契定的宏。
+///
+/// [AsRef]: https://doc.rust-lang.org/std/convert/trait.AsRef.html
+///
 #[macro_export]
 macro_rules! impl_as_ref {
     ($Type:ty) => {
@@ -67,7 +70,9 @@ macro_rules! impl_as_ref {
     };
 }
 
-/// 用于帮助实现 AsPtr<T> 契定的宏。
+/// 用于帮助实现 [AsPtr] 契定的宏。
+///
+/// [AsPtr]: trait.AsPtr.html
 ///
 /// # Examples
 ///
@@ -115,7 +120,9 @@ macro_rules! impl_as_ptr {
     };
 }
 
-/// 用于帮助实现 AsPtrMut<T> 契定的宏。
+/// 用于帮助实现 [AsPtrMut] 契定的宏。
+///
+/// [AsPtrMut]: trait.AsPtrMut.html
 ///
 /// # Examples
 ///
