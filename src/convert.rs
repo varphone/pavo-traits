@@ -25,34 +25,38 @@ pub trait AsPtrMut<T>: AsPtr<T> {
 ///
 /// [AsRef]: https://doc.rust-lang.org/std/convert/trait.AsRef.html
 ///
+/// # Examples
+///
+/// ```
+/// use pavo_traits::{impl_as_ref};
+///
+/// struct Bar {}
+///
+/// struct Foo {
+///     bar: Bar,
+/// }
+///
+/// impl_as_ref!(Foo);
+/// // Comment/Uncomment to select one of the follow lines.
+/// // impl_as_ref!(Foo, Bar); // Exclusive with the bellow.
+/// impl_as_ref!(Foo, Bar, bar); // Exclusive with the above.
+/// ```
 #[macro_export]
 macro_rules! impl_as_ref {
     ($Type:ty) => {
         impl AsRef<$Type> for $Type {
             fn as_ref(&self) -> &$Type {
-                &*self
+                self
             }
         }
-
-        // impl AsRef<$Type> for &$Type {
-        //     fn as_ref(&self) -> &$Type {
-        //         &**self
-        //     }
-        // }
     };
 
     ($Type:ty, $Target:ty) => {
         impl AsRef<$Target> for $Type {
             fn as_ref(&self) -> &$Target {
-                &*self as &$Target
+                &self as &$Target
             }
         }
-
-        // impl AsRef<$Target> for &$Type {
-        //     fn as_ref(&self) -> &$Target {
-        //         &**self as &$Target
-        //     }
-        // }
     };
 
     ($Type:ty, $Target:ty, $Expr:tt) => {
@@ -61,12 +65,53 @@ macro_rules! impl_as_ref {
                 &self.$Expr
             }
         }
+    };
+}
 
-        // impl AsRef<$Target> for &$Type {
-        //     fn as_ref(&self) -> &$Target {
-        //         &*self.$Expr
-        //     }
-        // }
+/// 用于帮助实现 [AsMut] 契定的宏。
+///
+/// [AsMut]: https://doc.rust-lang.org/std/convert/trait.AsMut.html
+///
+/// # Examples
+///
+/// ```
+/// use pavo_traits::{impl_as_mut};
+///
+/// struct Bar {}
+///
+/// struct Foo {
+///     bar: Bar,
+/// }
+///
+/// impl_as_mut!(Foo);
+/// // Comment/Uncomment to select one of the follow lines.
+/// // impl_as_mut!(Foo, Bar); // Exclusive with the bellow.
+/// impl_as_mut!(Foo, Bar, bar); // Exclusive with the above.
+/// ```
+#[macro_export]
+macro_rules! impl_as_mut {
+    ($Type:ty) => {
+        impl AsMut<$Type> for $Type {
+            fn as_mut(&mut self) -> &mut $Type {
+                self
+            }
+        }
+    };
+
+    ($Type:ty, $Target:ty) => {
+        impl AsMut<$Target> for $Type {
+            fn as_mut(&mut self) -> &mut $Target {
+                unsafe { std::mem::transmute::<&mut $Type, &mut $Target>(self) }
+            }
+        }
+    };
+
+    ($Type:ty, $Target:ty, $Expr:tt) => {
+        impl AsMut<$Target> for $Type {
+            fn as_mut(&mut self) -> &mut $Target {
+                &mut self.$Expr
+            }
+        }
     };
 }
 
