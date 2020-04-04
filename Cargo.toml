@@ -1,0 +1,17 @@
+[package]
+name = "pavo-traits"
+version = "0.1.0"
+authors = ["Varphone Wong <varphone@qq.com>"]
+edition = "2018"
+
+# Metadata for Publish
+description = """
+Traits for the Pavo Framework.
+"""
+documentation = "https://docs.rs/pavo-traits"
+homepage = "https://github.com/varphone/pavo-traits"
+readme = "README.md"
+categories = ["embedded", "external-ffi-bindings"]
+license = "MIT"
+
+[dependencies]
