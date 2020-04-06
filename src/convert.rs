@@ -115,6 +115,15 @@ macro_rules! impl_as_mut {
     };
 }
 
+/// 用于帮助实现 `AsMut + AsRef` 等契定的宏。
+#[macro_export(local_inner_macros)]
+macro_rules! impl_as_mut_and_ref {
+    ($($x:tt)*) => {
+        impl_as_mut!($($x)*);
+        impl_as_ref!($($x)*);
+    }
+}
+
 /// 用于帮助实现 [AsPtr] 契定的宏。
 ///
 /// [AsPtr]: trait.AsPtr.html
@@ -142,12 +151,6 @@ macro_rules! impl_as_ptr {
                 self.as_ref() as *const $Type
             }
         }
-
-        // impl AsPtr<$Type> for &$Type {
-        //     fn as_ptr(&self) -> *const $Type {
-        //         self.as_ref() as *const $Type
-        //     }
-        // }
     };
 
     ($Type:ty, $Target:ty) => {
@@ -156,12 +159,10 @@ macro_rules! impl_as_ptr {
                 self.as_ref() as *const $Target
             }
         }
+    };
 
-        // impl AsPtr<$Target> for &$Type {
-        //     unsafe fn as_ptr(&self) -> *const $Target {
-        //         self.as_ref() as *const $Target
-        //     }
-        // }
+    ($Type:ty, $Target:ty, $Expr:tt) => {
+        impl_as_ptr!($Type, $Target);
     };
 }
 
@@ -194,12 +195,6 @@ macro_rules! impl_as_ptr_mut {
                 self.as_ptr() as *const $Type as *mut $Type
             }
         }
-
-        // impl AsPtrMut<$Type> for &$Type {
-        //     unsafe fn as_ptr_mut(&self) -> *mut $Type {
-        //         self.as_ptr() as *const $Type as *mut $Type
-        //     }
-        // }
     };
 
     ($Type:ty, $Target:ty) => {
@@ -208,13 +203,36 @@ macro_rules! impl_as_ptr_mut {
                 self.as_ptr() as *const $Target as *mut $Target
             }
         }
-
-        // impl AsPtrMut<$Target> for &$Type {
-        //     unsafe fn as_ptr_mut(&self) -> *mut $Target {
-        //         self.as_ptr() as *cont $Target as *mut $Target
-        //     }
-        // }
     };
+
+    ($Type:ty, $Target:ty, $Expr:tt) => {
+        impl_as_mut!($Type, $Target);
+    };
+}
+
+/// 用于帮助在单个类型上实现 `AsRef + AsMut + AsPtr + AsPtrMut` 等契定的宏。
+#[macro_export(local_inner_macros)]
+macro_rules! impl_as_bundle {
+    () => {};
+    ($($x:tt)*) => {
+        impl_as_ref!($($x)*);
+        impl_as_mut!($($x)*);
+        impl_as_ptr!($($x)*);
+        impl_as_ptr_mut!($($x)*);
+    };
+}
+
+/// 用于帮助在多个类型上实现 `AsRef + AsMut + AsPtr + AsPtrMut` 等契定的宏。
+#[macro_export(local_inner_macros)]
+macro_rules! impl_as_bundle_many {
+    ($($Type:ty),* $(,)?) => {
+        $(
+            impl_as_ref!($Type);
+            impl_as_mut!($Type);
+            impl_as_ptr!($Type);
+            impl_as_ptr_mut!($Type);
+        )*
+    }
 }
 
 #[cfg(test)]
