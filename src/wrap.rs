@@ -230,6 +230,7 @@ macro_rules! impl_inner_refer {
 #[macro_export(local_inner_macros)]
 macro_rules! impl_struct_wrapper {
     ($Wrapper:ty, $Inner:ty) => {
+        impl_as_mut_and_ref!($Wrapper);
         impl_as_ref!($Wrapper, $Inner, inner);
         impl_as_ptr!($Wrapper, $Inner);
         impl_as_ptr_mut!($Wrapper, $Inner);
