@@ -8,7 +8,9 @@ pub trait AsPtr<T>: AsRef<T> {
     /// # Safety
     ///
     /// 强转指针属于危险操作，请务必确保其安全性。
-    unsafe fn as_ptr(&self) -> *const T;
+    unsafe fn as_ptr(&self) -> *const T {
+        AsRef::<T>::as_ref(self) as *const T
+    }
 }
 
 /// 定义将只读引用转化至可写指针的契定。
@@ -18,7 +20,9 @@ pub trait AsPtrMut<T>: AsPtr<T> {
     /// # Safety
     ///
     /// 强转指针属于危险操作，请务必确保其安全性。
-    unsafe fn as_ptr_mut(&self) -> *mut T;
+    unsafe fn as_ptr_mut(&self) -> *mut T {
+        AsPtr::<T>::as_ptr(self) as *mut T
+    }
 }
 
 /// 用于帮助实现 [AsRef] 契定的宏。
@@ -53,8 +57,8 @@ macro_rules! impl_as_ref {
 
     ($Type:ty, $Target:ty) => {
         impl AsRef<$Target> for $Type {
-            fn as_ref(&self) -> &$Target {
-                &self as &$Target
+            fn as_ref(&self) -> $Target {
+                self as &$Target
             }
         }
     };
@@ -146,19 +150,11 @@ macro_rules! impl_as_mut_and_ref {
 #[macro_export]
 macro_rules! impl_as_ptr {
     ($Type:ty) => {
-        impl AsPtr<$Type> for $Type {
-            unsafe fn as_ptr(&self) -> *const $Type {
-                self.as_ref() as *const $Type
-            }
-        }
+        impl AsPtr<$Type> for $Type {}
     };
 
     ($Type:ty, $Target:ty) => {
-        impl AsPtr<$Target> for $Type {
-            unsafe fn as_ptr(&self) -> *const $Target {
-                self.as_ref() as *const $Target
-            }
-        }
+        impl AsPtr<$Target> for $Type {}
     };
 
     ($Type:ty, $Target:ty, $Expr:tt) => {
@@ -190,19 +186,11 @@ macro_rules! impl_as_ptr {
 #[macro_export]
 macro_rules! impl_as_ptr_mut {
     ($Type:ty) => {
-        impl AsPtrMut<$Type> for $Type {
-            unsafe fn as_ptr_mut(&self) -> *mut $Type {
-                self.as_ptr() as *const $Type as *mut $Type
-            }
-        }
+        impl AsPtrMut<$Type> for $Type {}
     };
 
     ($Type:ty, $Target:ty) => {
-        impl AsPtrMut<$Target> for $Type {
-            unsafe fn as_ptr_mut(&self) -> *mut $Target {
-                self.as_ptr() as *const $Target as *mut $Target
-            }
-        }
+        impl AsPtrMut<$Target> for $Type {}
     };
 
     ($Type:ty, $Target:ty, $Expr:tt) => {
@@ -235,6 +223,24 @@ macro_rules! impl_as_bundle_many {
     }
 }
 
+// Auto impl AsPtr<U> for &T
+impl<T, U> AsPtr<U> for &T
+where
+    T: AsPtr<U>,
+    T: Sized,
+    U: Sized,
+{
+}
+
+// Auto impl AsPtrMut<U> for &T
+impl<T, U> AsPtrMut<U> for &T
+where
+    T: AsPtrMut<U>,
+    T: Sized,
+    U: Sized,
+{
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -246,17 +252,26 @@ mod tests {
     }
 
     impl_as_ref!(Foo);
+    impl_as_ref!(Foo, usize, v);
     impl_as_ptr!(Foo);
+    impl_as_ptr!(Foo, usize);
     impl_as_ptr_mut!(Foo);
 
-    fn read_ptr<T>(t: &T) -> usize
+    fn read_ptr<T>(t: T) -> usize
     where
         T: AsPtrMut<Foo>,
     {
         unsafe { std::ptr::read(t.as_ptr() as *const usize) }
     }
 
-    fn write_ptr_mut<T>(t: &T)
+    fn read_ptr2<T>(t: T) -> usize
+    where
+        T: AsPtr<usize>,
+    {
+        unsafe { std::ptr::read(t.as_ptr()) }
+    }
+
+    fn write_ptr_mut<T>(t: T)
     where
         T: AsPtrMut<Foo>,
     {
@@ -274,6 +289,10 @@ mod tests {
             assert_eq!(v, f.v);
             let v2 = read_ptr(&f);
             assert_eq!(v, v2);
+            let v3 = read_ptr2(&f);
+            assert_eq!(v2, v3);
+            let v4 = read_ptr(f);
+            assert_eq!(v3, v4);
         }
     }
 
@@ -286,6 +305,7 @@ mod tests {
             assert_eq!(321, f.v);
             write_ptr_mut(&f);
             assert_eq!(456, f.v);
+            write_ptr_mut(f);
         }
     }
 }
