@@ -105,9 +105,8 @@ macro_rules! impl_clamped {
                 self
             }
         }
-    }
+    };
 }
-
 
 impl_clamped!(i8);
 impl_clamped!(i16);
@@ -149,7 +148,7 @@ macro_rules! impl_is_approach {
                 *self < target.saturating_add(diff) && *self > target.saturating_sub(diff)
             }
         }
-    }
+    };
 }
 
 impl_is_approach!(i8);
@@ -187,7 +186,7 @@ macro_rules! impl_is_in_range {
                 self >= min && self <= max
             }
         }
-    }
+    };
 }
 
 impl_is_in_range!(i8);
@@ -224,10 +223,10 @@ mod tests {
     #[test]
     fn test_is_in_range() {
         for a in 0..1000000 {
-            assert!(!a.is_in_range(a-2, a-1));
-            assert!(a.is_in_range(a-1, a));
+            assert!(!a.is_in_range(a - 2, a - 1));
+            assert!(a.is_in_range(a - 1, a));
             assert!(a.is_in_range(a, a));
-            assert!(a.is_in_range(a, a+1));
+            assert!(a.is_in_range(a, a + 1));
         }
     }
 }
