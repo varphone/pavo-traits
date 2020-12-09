@@ -9,7 +9,7 @@ description = """
 Traits for the Pavo Framework.
 """
 documentation = "https://docs.rs/pavo-traits"
-homepage = "https://github.com/varphone/pavo-traits"
+homepage = "https://github.com/vaxpl/pavo-traits"
 readme = "README.md"
 categories = ["embedded", "external-ffi-bindings"]
 license = "MIT"
