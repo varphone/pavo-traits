@@ -9,6 +9,10 @@ pub mod num;
 #[doc(inline)]
 pub use num::*;
 
+pub mod slice;
+#[doc(inline)]
+pub use slice::*;
+
 pub mod wrap;
 #[doc(inline)]
 pub use wrap::*;
